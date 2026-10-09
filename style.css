@@ -8,25 +8,41 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #d13f3f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #1d1b1b;
     min-height: 100vh;
+    padding: 30px;
 }
 
 .container {
-    background-color: white;
-    width: 400px;
+    background-color: rgb(21, 155, 196);
+    width: min(1100px, 100%);
     padding: 30px;
     border-radius: 10px;
-
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.column {
+    min-height: 300px;
+    padding: 16px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.column h2 {
+    margin-bottom: 15px;
+    font-size: 20px;
 }
 
 .form {
@@ -42,7 +58,7 @@ h1 {
 }
 
 #addButton {
-    padding: 20px 15px;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
     background-color: #333;
@@ -51,32 +67,89 @@ h1 {
 }
 
 
-#taskList {
+.task-list {
     list-style: none;
     margin-top: 20px;
+    min-height: 180px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.task-list:empty {
+    border: 2px dashed #d0d0d0;
+}
+
+.task-list:empty:hover {
+    background-color: white;
 }
 
 .task {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 10px;
     margin-bottom: 10px;
-    background-color: #f5f5f5;
+    background-color: #33635b;
     border-radius: 5px;
+    cursor: grab;
 }
 
-.delete-button {
+.task:active {
+    cursor: grabbing;
+}
+
+.task-text {
+    display: block;
+    background-color: #d0d0d0;
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+    border-radius: 4px;
+    padding-top: 4px;
+    padding-left: 8px;
+    height: 30px;
+}
+
+.task-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.task-actions button {
     border: none;
-    background-color: red;
     color: white;
-    padding: 5px 8px;
+    padding: 6px 8px;
     border-radius: 5px;
     cursor: pointer;
 }
 
-.completed {
-    text-decoration: line-through;
+.edit-button,
+.save-button {
+    background-color: #333;
+}
 
-    color: gray;
+.cancel-button {
+    background-color: #777;
+}
+
+.delete-button {
+    background-color: red;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+@media (max-width: 750px) {
+    body {
+        padding: 16px;
+    }
+
+    .board {
+        grid-template-columns: 1fr;
+    }
+
+    .column {
+        min-height: 220px;
+    }
 }

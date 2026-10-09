@@ -4,71 +4,148 @@
 
 const taskInput = document.getElementById("taskInput");
 const addButton = document.getElementById("addButton");
-const taskList = document.getElementById("taskList");
-
+const taskLists = document.querySelectorAll(".task-list");
 
 // =============================
 // RÉCUPÉRER LES TÂCHES
 // =============================
 
-// On récupère les tâches enregistrées
-// Si aucune tâche n'existe, on utilise un tableau vide
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
+// Les anciennes tâches étaient enregistrées comme du texte.
+// On les transforme en tâches avec un texte et une colonne.
+let tasks = savedTasks.map(function (task) {
+    if (typeof task === "string") {
+        return { text: task, status: "todo" };
+    }
+
+    const validStatuses = ["todo", "doing", "done"];
+    const status = validStatuses.includes(task.status) ? task.status : "todo";
+
+    return { text: task.text, status: status };
+});
 
 // =============================
 // AFFICHER LES TÂCHES
 // =============================
 
 function displayTasks() {
+    taskLists.forEach(function (taskList) {
+        taskList.innerHTML = "";
 
-    // On vide la liste HTML
-    taskList.innerHTML = "";
+        const status = taskList.dataset.status;
 
-    // On parcourt toutes les tâches
-    tasks.forEach(function (task, index) {
+        tasks.forEach(function (task, index) {
+            if (task.status !== status) {
+                return;
+            }
 
-        // Création d'un <li>
-        const li = document.createElement("li");
+            const li = document.createElement("li");
+            li.classList.add("task");
+            li.draggable = true;
 
-        li.classList.add("task");
+            li.addEventListener("dragstart", function (event) {
+                event.dataTransfer.setData("text/plain", index);
+                event.dataTransfer.effectAllowed = "move";
+            });
 
-        // Texte de la tâche
-        const span = document.createElement("span");
+            const span = document.createElement("span");
+            span.textContent = task.text;
+            span.classList.add("task-text");
 
-        span.textContent = task;
+            const actions = document.createElement("div");
+            actions.classList.add("task-actions");
 
-        // Bouton supprimer
-        const deleteButton = document.createElement("button");
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.textContent = "Modifier";
+            editButton.classList.add("edit-button");
 
-        deleteButton.textContent = "Supprimer";
+            editButton.addEventListener("click", function () {
+                const editInput = document.createElement("input");
+                editInput.type = "text";
+                editInput.value = task.text;
+                editInput.setAttribute("aria-label", "Modifier la tâche");
+                editInput.classList.add("edit-input");
 
-        deleteButton.classList.add("delete-button");
+                const saveButton = document.createElement("button");
+                saveButton.type = "button";
+                saveButton.textContent = "Enregistrer";
+                saveButton.classList.add("save-button");
 
-        // Quand on clique sur supprimer
-        deleteButton.addEventListener("click", function () {
+                const cancelButton = document.createElement("button");
+                cancelButton.type = "button";
+                cancelButton.textContent = "Annuler";
+                cancelButton.classList.add("cancel-button");
 
-            // Supprime la tâche du tableau
-            tasks.splice(index, 1);
+                function saveTask() {
+                    const updatedTask = editInput.value.trim();
 
-            // Enregistre le nouveau tableau
-            localStorage.setItem("tasks", JSON.stringify(tasks));
+                    if (updatedTask === "") {
+                        alert("La tâche ne peut pas être vide !");
+                        editInput.focus();
+                        return;
+                    }
 
-            // Réaffiche les tâches
-            displayTasks();
+                    task.text = updatedTask;
+                    localStorage.setItem("tasks", JSON.stringify(tasks));
+                    displayTasks();
+                }
+
+                saveButton.addEventListener("click", saveTask);
+                cancelButton.addEventListener("click", displayTasks);
+
+                li.replaceChild(editInput, span);
+                actions.replaceChildren(saveButton, cancelButton);
+                editInput.focus();
+                editInput.select();
+            });
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.textContent = "Supprimer";
+            deleteButton.classList.add("delete-button");
+
+            deleteButton.addEventListener("click", function () {
+                tasks.splice(index, 1);
+                localStorage.setItem("tasks", JSON.stringify(tasks));
+                displayTasks();
+            });
+
+            li.appendChild(span);
+            actions.appendChild(editButton);
+            actions.appendChild(deleteButton);
+            li.appendChild(actions);
+            taskList.appendChild(li);
         });
-
-        // On ajoute le texte dans le <li>
-        li.appendChild(span);
-
-        // On ajoute le bouton dans le <li>
-        li.appendChild(deleteButton);
-
-        // On ajoute le <li> dans la liste
-        taskList.appendChild(li);
     });
 }
 
+// =============================
+// GLISSER UNE TÂCHE VERS UNE AUTRE COLONNE
+// =============================
+
+taskLists.forEach(function (taskList) {
+    taskList.addEventListener("dragover", function (event) {
+        event.preventDefault();
+    });
+
+    taskList.addEventListener("drop", function (event) {
+        event.preventDefault();
+
+        const draggedIndex = event.dataTransfer.getData("text/plain");
+        const taskIndex = Number(draggedIndex);
+        const task = tasks[taskIndex];
+
+        if (draggedIndex === "" || !Number.isInteger(taskIndex) || !task) {
+            return;
+        }
+
+        task.status = taskList.dataset.status;
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        displayTasks();
+    });
+});
 
 // =============================
 // AJOUTER UNE TÂCHE
@@ -76,10 +153,8 @@ function displayTasks() {
 
 addButton.addEventListener("click", function () {
 
-    // Récupérer le texte
     const taskText = taskInput.value.trim();
 
-    // Vérifier si le champ est vide
     if (taskText === "") {
 
         alert("Écris une tâche !");
@@ -87,16 +162,11 @@ addButton.addEventListener("click", function () {
         return;
     }
 
-    // Ajouter la tâche au tableau
-    tasks.push(taskText);
+    tasks.push({ text: taskText, status: "todo" });
 
-    // Sauvegarder dans localStorage
     localStorage.setItem("tasks", JSON.stringify(tasks));
-
-    // Vider le champ
     taskInput.value = "";
-
-    // Réafficher les tâches
+    taskInput.focus();
     displayTasks();
 });
 
@@ -104,6 +174,4 @@ addButton.addEventListener("click", function () {
 // =============================
 // AFFICHAGE INITIAL
 // =============================
-
-// Afficher les tâches déjà enregistrées
 displayTasks();

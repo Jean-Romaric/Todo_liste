@@ -12,29 +12,40 @@
 
 <body>
 
-    <div class="container">
-
+    <main class="container">
         <h1>Ma Todo List</h1>
 
-        <div class="form">
+        <div class="board">
+            <section class="column">
+                <h2>My Todo list</h2>
 
-            <input
-                type="text"
-                id="taskInput"
-                placeholder="Écris une tâche..."
-            >
+                <div class="form">
+                    <input
+                        type="text"
+                        id="taskInput"
+                        placeholder="Écris une tâche..."
+                        aria-label="Nouvelle tâche"
+                    >
 
-            <button id="addButton">
-                Ajouter
-            </button>
+                    <button id="addButton" type="button">
+                        Ajouter
+                    </button>
+                </div>
 
+                <ul id="todoList" class="task-list" data-status="todo"></ul>
+            </section>
+
+            <section class="column">
+                <h2>Doing</h2>
+                <ul id="doingList" class="task-list" data-status="doing"></ul>
+            </section>
+
+            <section class="column">
+                <h2>Done</h2>
+                <ul id="doneList" class="task-list" data-status="done"></ul>
+            </section>
         </div>
-
-      
-        <ul id="taskList"></ul>
-
-    </div>
-    
+    </main>
 
 
     <script src="script.js"></script>
